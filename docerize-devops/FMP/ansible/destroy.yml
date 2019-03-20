@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  tasks:
+        
+    - docker_container:
+        name: fmp_db_1
+        state: absent
+    - docker_container:
+        name: fmp_fed_1
+        state: absent
+    - docker_container:
+        name: fmp_api_1
+        state: absent
