@@ -19,9 +19,21 @@ Vagrant.configure("2") do |config|
     db.vm.hostname = "db-vm"
     db.vm.network "private_network", ip: "192.168.50.4"
     db.vm.network "forwarded_port", guest: 5432, host: 5432
-    db.vm.provision "shell", path: "postgresql/bootstrapdb.sh"
+    db.vm.provision "shell", path: "./bootstrapdb.sh"
     db.vm.provider :virtualbix do |vb|
-      vb.customize ["modifyvm", :id, "--memory", "512"]
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
+      vb.customize ["modifyvm", :id, "--cpus", "1"]
+    end
+  end
+
+  config.vm.define "dbrep" do |dbrep|
+    dbrep.vm.box = "centos/7"
+    dbrep.vm.hostname = "dbrep-vm"
+    dbrep.vm.network "private_network", ip: "192.168.50.7"
+    dbrep.vm.network "forwarded_port", guest: 5432, host: 5433
+    dbrep.vm.provision "shell", path: "./bootstrapdbreplication.sh"
+    dbrep.vm.provider :virtualbix do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
       vb.customize ["modifyvm", :id, "--cpus", "1"]
     end
   end

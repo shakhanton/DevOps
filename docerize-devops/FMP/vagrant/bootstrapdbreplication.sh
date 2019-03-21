@@ -17,15 +17,9 @@ sudo yum install postgresql96 postgresql96-server postgresql96-contrib postgresq
 sudo /usr/pgsql-9.6/bin/postgresql96-setup initdb
 sudo systemctl start postgresql-9.6
 sudo systemctl enable postgresql-9.6
-
-sudo -u postgres psql -c "CREATE USER developer WITH PASSWORD 'repoleved'"
-sudo -u postgres psql -c "CREATE DATABASE fmp_db WITH OWNER developer"
-
-sudo sh -c 'echo -e "listen_addresses='\''*'\''" >> /var/lib/pgsql/9.6/data/postgresql.conf'
-sudo sh -c 'echo -e "wal_level = replica" >> /var/lib/pgsql/9.6/data/postgresql.conf'
-sudo sh -c 'echo -e "max_wal_senders = 3" >> /var/lib/pgsql/9.6/data/postgresql.conf'
-sudo sh -c 'echo -e "wal_keep_segments = 128" >> /var/lib/pgsql/9.6/data/postgresql.conf'
-sudo sh -c 'echo -e "host    replication     replication     192.168.50.7/32         trust" >> /var/lib/pgsql/9.6/data/pg_hba.conf'
-sudo -u postgres psql -c "CREATE ROLE replication WITH REPLICATION PASSWORD 'Hello' LOGIN"
-sudo systemctl restart postgresql-9.6.service && sudo systemctl status postgresql-9.6.service 
+sudo systemctl stop postgresql-9.6
+sudo sh -c 'echo -e "hot_standby = on" >> /var/lib/pgsql/9.6/data/postgresql.conf'
+sudo rm -Rf /var/lib/pgsql/9.6/data
+sudo su postgres -c "pg_basebackup -h 192.168.50.4 -D /var/lib/pgsql/9.6/data -R -P -U replication -w --xlog-method=stream"
+sudo systemctl start postgresql-9.6.service && systemctl status postgresql-9.6.service 
 
