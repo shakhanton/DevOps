@@ -1,0 +1,85 @@
+---
+# tasks file for api-role
+
+- name: Install add-apt-repostory
+  become: yes
+  apt: name=software-properties-common state=latest
+
+- name: Add Oracle Java Repository
+  become: yes
+  apt_repository: repo='ppa:webupd8team/java'
+
+- name: Accept Java 8 License
+  become: yes
+  debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+- name: Install Oracle Java 8
+  become: yes
+  apt: name={{item}} state=latest
+  with_items:
+    - oracle-java8-installer
+    - ca-certificates
+    - oracle-java8-set-default
+
+
+# - name: Download Apache Maven 
+#   get_url: url=http://apache.claz.org/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz dest=/tmp/apache-maven-3.6.0-bin.tar.gz
+
+# - name: Untar Maven 
+#   shell: chdir=/tmp creates=/opt/apache-maven-3.6.0 tar -zxf apache-maven-3.6.0-bin.tar.gz -C /opt
+
+# What is missing
+
+# - name: Reload Path
+#   shell: source /home/deployer/.bashrc
+#   args:
+#     executable: /bin/bash
+# - shell: echo $PATH
+#   register: pathul
+
+# - name: Update path for maven use
+#   # shell: echo "export PATH=$PATH:/opt/apache-maven-3.6.0/bin" >> /etc/environment
+#   shell: echo "PATH=/opt/apache-maven-3.6.0/bin:$PATH" > /etc/environment
+#   # shell: export PATH=/opt/apache-maven-3.6.0/bin:$PATH
+
+# - name: Execute task with extended PATH
+#   shell: echo $PATH
+#   environment:
+#     PATH: "/opt/apache-maven-3.6.0/bin:{{ ansible_env.PATH }}"
+#   shell: echo "export 
+
+# - name: compile sources
+#   shell:
+#     coffee -o lib -c src 
+#     chdir=/opt/apache-maven-3.6.0/bin
+#   environment:
+#     PATH: $PATH:/opt/apache-maven-3.6.0/bin
+
+- name: install maven (and other packages if needed)
+  become: yes
+  apt: pkg={{ item }} state=latest update_cache=yes cache_valid_time=3600
+  with_items:
+    - maven
+
+# - name: Maven path configuration
+#   lineinfile:
+#     dest: /etc/profile.d/maven.sh
+#     line: '{{ item.line }}'
+#     create: yes
+#     state: present
+#   with_items:
+#     - { line: 'M2_HOME=/opt/apache-maven-3.6.0' }
+#     - { line: 'export PATH=$PATH:$M2_HOME/bin' }
+#     - { line: 'export PATH=$PATH:$M2_HOME/bin' }
+
+# - name: Add another bin dir to system-wide $PATH.
+#   lineinfile:
+#     create: yes
+#     state: present
+#     dest: /etc/profile.d/custom-path.sh
+#     line: 'export PATH=$PATH:/opt/apache-maven-3.6.0/bin'
+    
+# - name: Add another bin dir to system-wide $PATH.
+#       copy:
+#         dest: /etc/profile.d/custom-path.sh
+#         content: 'PATH=$PATH:{{ my_custom_path_var }}'

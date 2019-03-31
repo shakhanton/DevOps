@@ -1,0 +1,93 @@
+---
+# tasks file for db-role
+
+- name: Install certificates
+  apt:
+    name: ca-certificates
+
+- name: Add an Apt signing key to a specific keyring file
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+- apt_repository:
+    repo: deb https://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+    state: present
+
+- name: Update apt cache
+  apt: update_cache=yes
+
+- name: Upgrade packages
+  apt: upgrade=dist
+
+- name: Install 9.6 version of postgresql
+  apt:
+    name: postgresql-9.6
+
+# - name: add lines to postgresql.conf
+- lineinfile:
+    path: /etc/postgresql/9.6/main/postgresql.conf
+    line: "listen_addresses='*'"
+
+- lineinfile:
+    path: /etc/postgresql/9.6/main/postgresql.conf
+    line: 'wal_level = replica'
+
+- lineinfile:
+    path: /etc/postgresql/9.6/main/postgresql.conf
+    line: 'max_wal_senders = 3'
+
+- lineinfile:
+    path: /etc/postgresql/9.6/main/postgresql.conf
+    line: 'wal_keep_segments = 128'
+
+- lineinfile:
+    path: /etc/postgresql/9.6/main/pg_hba.conf
+    line: 'host    replication     replication     192.168.50.7/32         trust'
+
+
+- name: install psycopg2 package
+  apt: name=python-psycopg2 state=present
+
+# - name: install psycopg2 python module
+#   pip: name=psycopg2
+
+- name: Start service postgresql-9.6, if not started
+  service:
+    name: postgresql
+    state: started
+
+- name: Create postgres developer user
+  become: true
+  become_user: postgres
+  become_method: su
+  postgresql_user:
+    # db: fmp_db
+    name: developer
+    password: repoleved
+
+- name: Create fmp_db database
+  become: true
+  become_user: postgres
+  become_method: su
+  postgresql_db:
+    name: fmp_db
+    owner: developer
+
+# - postgresql_db:
+#     name: fmp_db
+#     owner: developer
+
+
+- name: Create postgres replication user
+  become: true
+  become_user: postgres
+  become_method: su
+  postgresql_user:
+    name: replication
+    password: Hello
+    role_attr_flags: LOGIN
+
+- name: Restart service postgresql-9.6
+  service:
+    name: postgresql
+    state: restarted

@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+
+  tasks:
+  - docker_container:
+      name: example-play
+      state: absent
+
+  - docker_container:
+      name: db-play
+      state: absent
+
+  - docker_container:
+      name: api-play
+      state: absent

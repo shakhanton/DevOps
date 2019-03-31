@@ -1,0 +1,160 @@
+# ---
+
+# - name: Create our image
+#   hosts: localhost
+#   tasks:
+
+#     - name: Create a data container
+#       docker_container:
+#         name: mydata
+#         image: ubuntu:bionic
+#         command: ["sleep", "1d"]
+
+#     - name: Check if container is running
+#       shell: docker ps
+
+---
+- name: Create our container
+  hosts: localhost
+  tasks:
+
+    # - name: Build an image and push it to a private repo
+    #   docker_image:
+    #     path: ./
+    #     dockerfile: none
+    #     name: ubnutu
+    #     tag: v1
+
+    - docker_container:
+        name: example-play
+        #image: ubnutu:v1
+        image: ubuntu:bionic
+        # command: sudo bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qy python-minimal)"
+        command: ["sleep", "1d"]
+      register: dockerr
+
+
+    - name: add container to inventory
+      add_host:
+        name: example-play
+        ansible_connection: docker
+        ansible_user: root
+      changed_when: false
+
+    # - name: exec python
+    #   shell: docker exec -d example-play bash -c "apt update && apt-get -y install python"
+
+######################################
+    - docker_container:
+        name: db-play
+        #image: ubnutu:v1
+        image: ubuntu:bionic
+        # command: sudo bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qy python-minimal)"
+        command: ["sleep", "1d"]
+      register: dockerrdb
+
+      
+    - name: add container to inventory
+      add_host:
+        name: db-play
+        ansible_connection: docker
+        ansible_user: root
+      changed_when: false
+
+    # - name: exec python
+    #   shell: docker exec -d db-play bash -c "apt update && apt-get -y install python"
+#########################################
+
+    - docker_container:
+        name: api-play
+        #image: ubnutu:v1
+        image: ubuntu:bionic
+        # command: sudo bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qy python-minimal)"
+        command: ["sleep", "1d"]
+      register: dockerapi
+
+      
+    - name: add container to inventory
+      add_host:
+        name: api-play
+        ansible_connection: docker
+        ansible_user: root
+      changed_when: false
+
+    # - name: exec python
+    #   shell: docker exec -d api-play bash -c "apt update && apt-get -y install python"
+##########################################
+
+
+
+- name: install python play fed
+  hosts: example-play
+  become_method: sudo
+  become: no
+  gather_facts: False
+  tasks: 
+    - name: install python
+      # raw: sudo apt-get -y install python-simplejson
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+- name: install python play db
+  hosts: db-play
+  become_method: sudo
+  become: no
+  gather_facts: False
+  tasks: 
+    - name: install python
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+- name: install python play api
+  hosts: api-play
+  become_method: sudo
+  become: no
+  gather_facts: False
+  tasks: 
+    - name: install python
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+- name: Example play
+  hosts: example-play
+  roles:
+      - node-role
+
+- name: Example play
+  hosts: db-play
+  roles:
+      - db-role
+
+- name: Example play
+  hosts: api-play
+  roles:
+      - api-role
+
+- name: stop our container
+  hosts: localhost
+  tasks:
+
+    - docker_container:
+        name: example-play
+        state: stopped
+
+    - docker_container:
+        name: db-play
+        state: stopped
+
+    - docker_container:
+        name: api-play
+        state: stopped
+
+    # - name: display logs
+    #   debug:
+    #     msg:  "{{ dockerr.ansible_facts.docker_container.Config.Hostname }}"
+
+    - name: Create docker image
+      shell: docker commit {{ dockerr.ansible_facts.docker_container.Config.Hostname }} myawesomefedimage
+
+    - name: Create docker image
+      shell: docker commit {{ dockerrdb.ansible_facts.docker_container.Config.Hostname }} myawesomedbimage
+
+    - name: Create docker image
+      shell: docker commit {{ dockerapi.ansible_facts.docker_container.Config.Hostname }} myawesomeapiimage
