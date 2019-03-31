@@ -1,0 +1,11 @@
+---
+# tasks file for api-fmp-role
+
+# - name: Execute the command in remote shell; stdout goes to the specified file on the remote.
+#   shell: cd /home/api
+
+- name: Execute the command in remote shell; stdout goes to the specified file on the remote.
+  shell: cd /home/api && mvn -B -f pom.xml dependency:resolve </dev/null >/dev/null 2>&1 &
+
+- name: Execute the command in remote shell; stdout goes to the specified file on the remote.
+  shell: cd /home/api &&  mvn clean spring-boot:run </dev/null >/dev/null 2>&1 &

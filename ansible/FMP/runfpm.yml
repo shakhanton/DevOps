@@ -1,0 +1,130 @@
+---
+
+- name: Run our containers
+  hosts: localhost
+  tasks:
+
+    - docker_service:
+        project_name: flask
+        definition:
+          version: '2'
+          services:
+            db:
+              image: myawesomedbimage
+              ports:
+                - "5432:5432"
+            web:
+              image: myawesomeapiimage
+              # command: "python manage.py runserver 0.0.0.0:8000"
+              volumes:
+                - "{{ playbook_dir }}/api:/home/api"
+              ports:
+                - "8080:8080"
+              depends_on:
+                - db
+            fed:
+              image: myawesomefedimage
+              volumes:
+                - "{{ playbook_dir }}/frontend:/home/fed"
+              ports:
+                - "3000:3000"            
+      register: output
+
+    - name: add container to inventory
+      add_host:
+        name: flask_db_1
+        ansible_connection: docker
+        ansible_user: root
+      changed_when: false
+
+    - name: add container to inventory
+      add_host:
+        name: flask_web_1
+        ansible_connection: docker
+        ansible_user: root
+      changed_when: false
+
+    - name: add container to inventory
+      add_host:
+        name: flask_fed_1
+        ansible_connection: docker
+        ansible_user: root
+      changed_when: false
+
+- name: Example play
+  hosts: flask_db_1
+  roles:
+      - run-fmp-role
+
+- name: Example play
+  hosts: flask_web_1
+  roles:
+      - api-fmp-role
+
+- name: Example play
+  hosts: flask_fed_1
+  roles:
+      - fed-fmp-role
+
+    # - name: display logs
+    #   debug:
+    #     msg:  "{{ output.ansible_facts.db.labels.com.docker.compose }}"
+
+# - name: Example play
+#   hosts: flask_web_1
+#   roles:
+#       - run-fmp-role
+
+
+
+
+
+
+
+
+
+    # - docker_container:
+    #     name: db-play-play
+    #     image: myawesomedbimage
+    #     command: ["sleep", "1d"]
+    #     # networks:
+    #     #   - name: TestingNet
+    #     #     ipv4_address: "192.168.50.4"
+    #     hostname: db-play
+    #     network_mode: "host"
+    #     published_ports:
+    #      - "5432:5432"
+
+
+    # - docker_container:
+    #     name: api-play-play
+    #     image: myawesomeapiimage
+    #     working_dir: /home/app/api
+    #     volumes: ./:/home/app
+    #     command: mvn -B -f pom.xml dependency:resolve && mvn clean spring-boot:run
+    #     command: ["sleep", "1d"]
+    #     # networks:
+    #     #   - name: TestingNet
+    #     #     ipv4_address: "192.168.50.5"
+    #     network_mode: "host"
+    #     published_ports:
+    #      - "8080:8080"
+
+    # - docker_container:
+    #     name: fed-play
+    #     image: myawesomefedimage
+    #     command: ["sleep", "1d"]
+        # networks:
+        #   - name: TestingNet
+        #     ipv4_address: "192.168.50.6"
+        # ports:
+        #  - "3000:3000"
+
+    # - name: Remove all but selected list of containers
+    #   docker_network:
+    #     name: network_one
+    #     connected:
+    #       - api-play
+    #       - db-play
+    #       # - fed-play
+

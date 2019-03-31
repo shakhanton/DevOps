@@ -1,0 +1,8 @@
+---
+# tasks file for fed-fmp-role
+
+- name: Execute the command in remote shell; stdout goes to the specified file on the remote.
+  shell: cd /home/fed && npm install </dev/null >/dev/null 2>&1 &
+
+- name: Execute the command in remote shell; stdout goes to the specified file on the remote.
+  shell: cd /home/fed && npm start </dev/null >/dev/null 2>&1 &

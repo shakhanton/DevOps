@@ -43,6 +43,9 @@
 - lineinfile:
     path: /etc/postgresql/9.6/main/pg_hba.conf
     line: 'host    replication     replication     192.168.50.7/32         trust'
+- lineinfile:
+    path: /etc/postgresql/9.6/main/pg_hba.conf
+    line: 'host  all  all 0.0.0.0/0 md5'
 
 
 - name: install psycopg2 package
@@ -91,3 +94,8 @@
   service:
     name: postgresql
     state: restarted
+
+- name: Enable service postgresql, and not touch the state
+  service:
+    name: postgresql
+    enabled: yes
