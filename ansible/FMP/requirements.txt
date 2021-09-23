@@ -1,5 +1,5 @@
 alabaster==0.7.12
-ansible==2.7.9
+ansible==4.2.0
 ansible-container==0.9.2
 asn1crypto==0.24.0
 aspy.yaml==1.2.0
